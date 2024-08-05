@@ -1,5 +1,15 @@
 # Quick Start: AWS Solutions Architect AI Agent with Amazon Bedrock
 
+
+ZURICH STARTS HERE!
+
+
+
+
+
+
+-----BERLIN INSTRUCTIONS----------
+
 This repository contains instructions and code samples for building an AWS Solutions Architect Agent with Amazon Bedrock.
 
 🎥 In addition, you can find the session recording [here](https://bit.ly/boa305-berlin)
