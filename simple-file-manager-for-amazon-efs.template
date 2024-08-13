@@ -1,0 +1,308 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License").
+# You may not use this file except in compliance with the License.
+# A copy of the License is located at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# or in the "license" file accompanying this file. This file is distributed
+# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied. See the License for the specific language governing
+# permissions and limitations under the License.
+#
+# Template for Simple File Manager for Amazon EFS Solution
+#
+# author: aws-solutions-builder@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: (SO0145) Simple File Manager for Amazon EFS Solution Main v1.5.9
+
+Parameters:
+  AdminEmail:
+    Description: Email address of the Simple File Manager Administrator
+    Type: String
+
+Mappings:
+  Solution:
+    Data:
+      ID: "SO0145" 
+      Version: "v1.5.9"
+      AppRegistryApplicationName: "sfm"
+      SolutionName: "Simple File Manager for Amazon EFS"
+      ApplicationType: "AWS-Solutions"
+      AttributeGroupName: "Solution-Metadata"
+  SourceCode:
+    General:
+      GlobalS3Bucket: "solutions-reference"
+      RegionalS3Bucket: "solutions"
+      CodeKeyPrefix: "simple-file-manager-for-amazon-efs/v1.5.9"
+      TemplateKeyPrefix: "simple-file-manager-for-amazon-efs/v1.5.9"
+
+Resources:
+  Application:
+    Type: AWS::ServiceCatalogAppRegistry::Application
+    Properties:
+      Description: Service Catalog application to track and manage all your resources. The Solution ID is SO0145 and Solution Version is v1.5.9.
+      Name: 
+        !Join
+          - "-"
+          - - !FindInMap [Solution, Data, "AppRegistryApplicationName"]
+            - !Ref AWS::Region
+            - !Ref AWS::AccountId
+            - !Ref AWS::StackName 
+      Tags: {
+            'Solutions:SolutionID': !FindInMap [Solution, Data, "ID"],
+            'Solutions:SolutionVersion': !FindInMap [Solution, Data, "Version"],
+            'Solutions:SolutionName': !FindInMap [Solution, Data, "SolutionName"],
+            'Solutions:ApplicationType': !FindInMap [Solution, Data, "ApplicationType"], 
+            }
+
+  AppRegistryApplicationStackAssociation0:
+    Type: AWS::ServiceCatalogAppRegistry::ResourceAssociation
+    Properties:
+      Application: !GetAtt Application.Id
+      Resource:
+        !Ref AWS::StackId
+      ResourceType: CFN_STACK
+    
+  AppRegistryApplicationStackAssociationNestedStack1:
+    Type: AWS::ServiceCatalogAppRegistry::ResourceAssociation
+    Properties:
+      Application: !GetAtt Application.Id
+      Resource:
+        !Ref EFSFileManagerAPI
+      ResourceType: CFN_STACK
+
+  AppRegistryApplicationStackAssociationNestedStack2:
+    Type: AWS::ServiceCatalogAppRegistry::ResourceAssociation
+    Properties:
+      Application: !GetAtt Application.Id
+      Resource:
+        !Ref EFSFileAuthentication
+      ResourceType: CFN_STACK
+
+  AppRegistryApplicationStackAssociationNestedStack3:
+    Type: AWS::ServiceCatalogAppRegistry::ResourceAssociation
+    Properties:
+      Application: !GetAtt Application.Id
+      Resource:
+        !Ref EFSFileWebApplication
+      ResourceType: CFN_STACK
+
+  DefaultApplicationAttributes:
+    Type: AWS::ServiceCatalogAppRegistry::AttributeGroup
+    Properties:
+      Name: !Ref AWS::StackName
+      Description: Attribute group for solution information.
+      Attributes:
+        { "ApplicationType" : !FindInMap [Solution, Data, "ApplicationType"],
+          "Version": !FindInMap [Solution, Data, "Version"],
+          "SolutionID": !FindInMap [Solution, Data, "ID"],
+          "SolutionName": !FindInMap [Solution, Data, "SolutionName"]
+        }
+
+  AppRegistryApplicationAttributeAssociation:
+    Type: AWS::ServiceCatalogAppRegistry::AttributeGroupAssociation
+    Properties:
+      Application: !GetAtt Application.Id
+      AttributeGroup: !GetAtt DefaultApplicationAttributes.Id
+
+  ApplicationInsightsConfiguration:
+    Type: AWS::ApplicationInsights::Application
+    DependsOn:
+      - Application
+    Properties: 
+      ResourceGroupName:
+        !Join
+          - "-"
+          - - AWS_AppRegistry_Application
+            - !FindInMap [Solution, Data, "AppRegistryApplicationName"]
+            - !Ref AWS::Region
+            - !Ref AWS::AccountId
+            - !Ref AWS::StackName
+      AutoConfigurationEnabled: true
+      CWEMonitorEnabled: true
+      OpsCenterEnabled: true
+  
+  # File Manager API Handler IAM Role
+  # TODO: Scope some of the inline policies down
+  EFSFileManagerIamRole:
+    Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "* resource needed for ec2:DescribeSecurityGroups and lambda:CreateFunction in this policy"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}-API-Policy"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 
+                  !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action:
+                  - "iam:CreateRole"
+                Resource: "arn:aws:iam::*:*"
+              - Effect: Allow
+                Action:
+                  - "lambda:CreateFunction"
+                  - "ec2:DescribeSecurityGroups"
+                  - "ec2:DescribeSubnets"
+                  - "ec2:DescribeVpcs"
+                  - "ec2:DescribeSecurityGroupRules"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - "elasticfilesystem:DescribeMountTargets"
+                  - "elasticfilesystem:DescribeFileSystems"
+                  - "elasticfilesystem:CreateAccessPoint"
+                  - "elasticfilesystem:DescribeAccessPoints"
+                  - "elasticfilesystem:DescribeMountTargetSecurityGroups"
+                Resource:
+                  - "arn:aws:elasticfilesystem:*:*:file-system/*"
+                  - "arn:aws:elasticfilesystem:*:*:access-point/*"
+                  - "arn:aws:elasticfilesystem:*:*:*"
+              - Effect: Allow
+                Action:
+                  - "elasticfilesystem:TagResource"
+                Resource:
+                  - "arn:aws:elasticfilesystem:*:*:access-point/*"
+                  - "arn:aws:elasticfilesystem:*:*:file-system/*"
+                Condition:
+                  StringEquals:
+                    elasticfilesystem:CreateAction: CreateAccessPoint
+              - Effect: Allow
+                Action:
+                  - "iam:PassRole"
+                Resource:
+                  - "arn:aws:iam::*:role/fs-*-manager-role"
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: lambda.amazonaws.com
+              - Effect: Allow
+                Action: 
+                  - "iam:GetRole"
+                Resource:
+                  - "arn:aws:iam::*:role/fs-*-manager-role"
+              - Effect: Allow
+                Action:
+                  - "elasticfilesystem:DeleteAccessPoint"
+                Resource: "arn:aws:elasticfilesystem:*:*:access-point/*"
+                Condition:
+                  StringEquals:
+                    aws:ResourceTag/Name: "simple-file-manager-access-point"
+              - Effect: Allow
+                Action:
+                  - "iam:DetachRolePolicy"
+                  - "iam:AttachRolePolicy"
+                  - "iam:DeleteRole"
+                Resource: "arn:aws:iam::*:role/fs-*-manager-role"
+              - Effect: Allow
+                Action:
+                  - "lambda:InvokeFunction"
+                  - "lambda:GetFunction"
+                  - "lambda:DeleteFunction"
+                Resource: "arn:aws:lambda:*:*:function:fs-*-manager-lambda"
+              - Effect: Allow
+                Action:
+                  - "cloudformation:CreateStack"
+                  - "cloudformation:DeleteStack"
+                  - "cloudformation:DescribeStacks"
+                Resource: "arn:aws:cloudformation:*:*:stack/*"
+
+  # File Manager API stack
+  EFSFileManagerAPI:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: 
+        !Join [
+          "",
+          [
+            "https://",
+            !FindInMap [ "SourceCode", "General", "GlobalS3Bucket" ],
+            ".s3.amazonaws.com/",
+            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
+            "/file-manager-api-stack.template",
+          ],
+        ]
+      Parameters:
+        ApiHandlerIamRole: !GetAtt EFSFileManagerIamRole.Arn
+        botoConfig: '{"user_agent_extra": "AwsSolution/SO0145/v1.5.9"}'
+        DeploymentPackageBucket: 
+          !Join ["-", [!FindInMap ["SourceCode", "General", "RegionalS3Bucket"], Ref: "AWS::Region"]]
+        DeploymentPackageKey:
+          !Join [
+            "/",
+            [
+            !FindInMap ["SourceCode", "General", "CodeKeyPrefix"],
+            "filemanagerapi.zip",
+            ],
+          ]
+        stackPrefix: !Sub "${AWS::StackName}"
+
+  # Deploy Authentication stack.
+  EFSFileAuthentication:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL:
+        !Join [
+          "",
+          [
+            "https://",
+            !FindInMap [ "SourceCode", "General", "GlobalS3Bucket" ],
+            ".s3.amazonaws.com/",
+            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
+            "/efs-file-manager-auth.template",
+          ],
+        ]
+      Parameters:
+        AdminEmail: !Ref AdminEmail
+        ApiId: !GetAtt EFSFileManagerAPI.Outputs.RestAPIId
+
+
+    # Deploy Web Application stack
+  EFSFileWebApplication:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL:
+        !Join [
+          "",
+          [
+            "https://",
+            !FindInMap [ "SourceCode", "General", "GlobalS3Bucket" ],
+            ".s3.amazonaws.com/",
+            !FindInMap ["SourceCode", "General", "TemplateKeyPrefix"],
+            "/efs-file-manager-web.template",
+          ],
+        ]
+      Parameters:
+        FileManagerAPIEndpoint: !Join [ '', !Split [ '/api/', !GetAtt EFSFileManagerAPI.Outputs.EndpointURL ] ]
+        UserPoolId: !GetAtt EFSFileAuthentication.Outputs.UserPoolId
+        IdentityPoolId: !GetAtt EFSFileAuthentication.Outputs.IdentityPoolId
+        PoolClientId: !GetAtt EFSFileAuthentication.Outputs.UserPoolClientId
+
+Outputs:
+  EFSFileSimpleWebsiteUrl:
+    Value: !GetAtt EFSFileWebApplication.Outputs.EFSFileSimpleWebsiteUrl
+
+git add .
+git commit -m "new updates"
+git push
+

@@ -1,13 +1,8 @@
-import tools
+import tools_new
 
-# test answer_query
-# query = "How to configure e-commerce website?"
-# print(tools.answer_query(query))
-
-# test code_gen_tool
-#query = "Provide configuration steps with all the services outlined to build simple e-commerce website."
-#print(tools.iac_gen_tool(query))
-
-# test iac_cost_estimation_tool
-query = "Estimate costs."
-print(tools.iac_estimate_tool(query))
+# Test Tool 1 - Knowledge Base 
+query = "I want to build an ecommerce website on AWS. What should I do?"
+# response_ret = tools_new.retrieve_and_generate_response(query)
+# tools_new.response_print(response_ret)
+response_text = tools_new.retrieve_and_generate_response(query)
+print(response_text)
