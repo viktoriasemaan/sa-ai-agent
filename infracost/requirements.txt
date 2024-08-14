@@ -1,5 +1,0 @@
-langchain
-langchain-community
-faiss-cpu
-boto3
-botocore
