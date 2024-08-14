@@ -13,7 +13,7 @@ bedrock_runtime = boto3.client('bedrock-runtime', region_name=region_name)
 bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime', region_name=region_name)
 
 # Function to retrieve and generate response
-def retrieve_and_generate_response(query):
+def answer_query(query):
     response_ret = bedrock_agent_runtime_client.retrieve(
         knowledgeBaseId=kb_id, 
         nextToken='string',
@@ -60,7 +60,7 @@ def response_print(retrieve_resp):
 
 
 # Additional function for IaC generation using Bedrock Converse API
-def iac_gen_converse_tool(prompt):
+def iac_gen_tool(prompt):
     """
     Generates Infrastructure as Code (IaC) scripts based on a customer's request.
 
