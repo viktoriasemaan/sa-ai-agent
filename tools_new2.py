@@ -73,19 +73,21 @@ def iac_gen_converse_tool(prompt):
     client = boto3.client('bedrock-runtime', region_name='us-west-2')
     
     # Define the conversation prompt
-    prompt_ending = "Act as a DevOps Engineer. Carefully analyze the customer requirements provided and identify all AWS services and integrations needed for the solution. Generate the Terraform code required to provision and configure each AWS service, writing the code step-by-step. Provide only the final Terraform code, without any additional comments, explanations, markdown formatting, or special symbols."
+    prompt_ending = """Assume the role of a DevOps Engineer. Thoroughly analyze the provided customer requirements to determine all necessary AWS services and their integrations for the solution.
+            Generate the Terraform code required to provision and configure each AWS service, writing the code step-by-step. Ensure the code adheres to best practices and is valid Terraform syntax. Provide only the final Terraform code, without any additional comments, explanations, markdown formatting, or special symbols. 
+            Requirements:"""
 
     messages = [
         {
             "role": "user",
             "content": [
-                {"text": prompt_ending}
+                {"text": prompt_ending + "\n" + prompt}
             ]
         }
     ]
     
     response = client.converse(
-        modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+        modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
         messages=messages
     )
 
@@ -105,3 +107,85 @@ def iac_gen_converse_tool(prompt):
     s3.upload_fileobj(file_buffer, bucket_name, s3_path)
     
     return f"File saved to S3 bucket {bucket_name} at {s3_path}"
+
+
+
+def iac_estimate_tool(prompt):
+    """
+    Estimates the cost of an AWS infrastructure using Infracost.
+
+    Args:
+        prompt (str): The customer's request.
+
+    Returns:
+        str: The cost estimation.
+    """
+    prompt_ending = "Given the estimated costs for an AWS cloud infrastructure, provide a breakdown of the monthly cost for each service. For services with multiple line items (e.g., RDS), aggregate the costs into a single total for that service. Present the cost analysis as a list, with each service and its corresponding monthly cost. Finally, include the total monthly cost for the entire infrastructure."
+    
+    # Get terraform code from S3
+    s3 = boto3.client('s3')
+    bucket_name = "bedrock-agent-generate-iac-estimate-cost"
+    prefix_code = "iac-code"
+    prefix_cost = "iac-cost"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    local_dir = '/tmp/infracost-evaluate'
+    
+    # Create the local directory if it doesn't exist
+    os.makedirs(local_dir, exist_ok=True)
+
+    # List objects in the S3 folder sorted by LastModified in descending order
+    objects = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix_code)
+    sorted_objects = sorted(objects['Contents'], key=lambda obj: obj['LastModified'], reverse=True)
+    
+    # Get the latest file key
+    latest_file_key = sorted_objects[0]['Key']
+    
+    # Download the latest file
+    local_file_path = os.path.join(local_dir, os.path.basename(latest_file_key))
+    s3.download_file(bucket_name, latest_file_key, local_file_path)
+    
+    # Generate timestamp-based file name
+    cost_filename = f"cost-evaluation-{timestamp}.txt"
+    cost_file_path = f"/tmp/{cost_filename}"
+    
+    # Run Infracost CLI command
+    infracost_cmd = f"infracost breakdown --path /tmp/infracost-evaluate > {cost_file_path}"
+    try:
+        subprocess.run(infracost_cmd, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        # Read the result file even if the command returns a non-zero exit code
+        with open(cost_file_path, 'r') as f:
+            cost_file = f.read()
+        print(f"Infracost command returned non-zero exit code: {e.returncode}")
+        print(f"Result: {cost_file}")
+    else:
+        with open(cost_file_path, 'r') as f:
+            cost_file = f.read()
+        print(f"Result: {cost_file}")
+    
+    # Upload cost evaluation file to S3 under the "iac-cost" folder
+    s3_cost_result = os.path.join(prefix_cost, cost_filename)
+    s3.upload_file(cost_file_path, bucket_name, s3_cost_result)
+
+
+
+    # Call Amazon Bedrock Converse API instead of the old invoke model API
+    client = boto3.client('bedrock-runtime', region_name='us-west-2')
+
+    messages = [
+    {
+        "role": "user",
+        "content": [
+            {"text": cost_file + "\n" + prompt_ending + "\n" + prompt}
+        ]
+    }
+    ]
+    
+    response = client.converse(
+        modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
+        messages=messages
+    )
+
+    generated_text = response['output']['message']['content'][0]['text']
+ 
+    return generated_text
