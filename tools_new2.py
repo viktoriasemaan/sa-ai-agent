@@ -62,7 +62,7 @@ def response_print(retrieve_resp):
 # Additional function for IaC generation using Bedrock Converse API
 def iac_gen_converse_tool(prompt):
     """
-    Generates Infrastructure as Code (IaC) scripts using the Amazon Bedrock Converse API.
+    Generates Infrastructure as Code (IaC) scripts based on a customer's request.
 
     Args:
         prompt (str): The customer's request.
@@ -73,11 +73,13 @@ def iac_gen_converse_tool(prompt):
     client = boto3.client('bedrock-runtime', region_name='us-west-2')
     
     # Define the conversation prompt
+    prompt_ending = "Act as a DevOps Engineer. Carefully analyze the customer requirements provided and identify all AWS services and integrations needed for the solution. Generate the Terraform code required to provision and configure each AWS service, writing the code step-by-step. Provide only the final Terraform code, without any additional comments, explanations, markdown formatting, or special symbols."
+
     messages = [
         {
             "role": "user",
             "content": [
-                {"text": prompt}
+                {"text": prompt_ending}
             ]
         }
     ]
