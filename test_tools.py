@@ -1,4 +1,4 @@
-import tools_new2
+import tools
 
 # TOOL 1
 
@@ -33,4 +33,4 @@ import tools_new2
 
 # test iac_cost_estimation_tool
 query = "Estimate costs."
-print(tools_new2.iac_estimate_tool(query))
+print(tools.iac_estimate_tool(query))

@@ -5,164 +5,62 @@ import boto3
 from datetime import datetime
 
 # Define the knowledge base ID
-knowledge_base_id = "EFSEVHIJBA"
+kb_id = "OUYPGZVGKR"
+region_name = "us-west-2"
 
 # Initialize Bedrock runtime clients
-bedrock_runtime = boto3.client('bedrock-runtime', 'us-west-2')
-bedrock_agent_runtime = boto3.client('bedrock-agent-runtime', 'us-west-2')
+bedrock_runtime = boto3.client('bedrock-runtime', region_name=region_name)
+bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime', region_name=region_name)
 
-def get_contexts(query, kbId, numberOfResults=5):
-    """
-    Retrieves contexts for a given query from the specified knowledge base.
-
-    Args:
-        query (str): The natural language query.
-        kbId (str): The knowledge base ID.
-        numberOfResults (int): Number of results to retrieve (default is 5).
-
-    Returns:
-        list: A list of contexts related to the query.
-    """
-    # Retrieve contexts for the query from the knowledge base
-    results = bedrock_agent_runtime.retrieve(
-        retrievalQuery={'text': query},
-        knowledgeBaseId=kbId,
-        retrievalConfiguration={'vectorSearchConfiguration': {'numberOfResults': numberOfResults}}
+# Function to retrieve and generate response
+def retrieve_and_generate_response(query):
+    response_ret = bedrock_agent_runtime_client.retrieve(
+        knowledgeBaseId=kb_id, 
+        nextToken='string',
+        retrievalConfiguration={
+            "vectorSearchConfiguration": {
+                "numberOfResults":5,
+            } 
+        },
+        retrievalQuery={'text': query}
     )
-    
-    # Create a list to store the contexts
-    contexts = [retrievedResult['content']['text'] for retrievedResult in results['retrievalResults']]
-    
-    return contexts
 
-def call_claude_sonnet(prompt):
-    """
-    Calls the Claude Sonnet model with a given prompt.
+    foundation_model = "anthropic.claude-3-sonnet-20240229-v1:0"
 
-    Args:
-        prompt (str): The prompt to send to the model.
-
-    Returns:
-        str: The response from the model.
-    """
-    prompt_config = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 4096,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                ],
+    response = bedrock_agent_runtime_client.retrieve_and_generate(
+        input={
+            "text": query
+        },
+        retrieveAndGenerateConfiguration={
+            "type": "KNOWLEDGE_BASE",
+            "knowledgeBaseConfiguration": {
+                'knowledgeBaseId': kb_id,
+                "modelArn": "arn:aws:bedrock:{}::foundation-model/{}".format(region_name, foundation_model),
+                "retrievalConfiguration": {
+                    "vectorSearchConfiguration": {
+                        "numberOfResults":5
+                    } 
+                }
             }
-        ],
-    }
+        }
+    )
 
-    body = json.dumps(prompt_config)
-    modelId = "anthropic.claude-3-sonnet-20240229-v1:0"
-    accept = "application/json"
-    contentType = "application/json"
+#    print(response['output']['text'], end='\n'*2)
+#    return response_ret
+    return response['output']['text']
 
-    response = bedrock_runtime.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
-    response_body = json.loads(response.get("body").read())
+def response_print(retrieve_resp):
+    # Structure 'retrievalResults': list of contents. Each list has content, location, score, metadata
+    for num, chunk in enumerate(retrieve_resp['retrievalResults'], 1):
+        print(f'Chunk {num}: ', chunk['content']['text'], end='\n'*2)
+        print(f'Chunk {num} Location: ', chunk['location'], end='\n'*2)
+        print(f'Chunk {num} Score: ', chunk['score'], end='\n'*2)
+        print(f'Chunk {num} Metadata: ', chunk['metadata'], end='\n'*2)
 
-    results = response_body.get("content")[0].get("text")
-    return results
 
-def claude_prompt_format(prompt: str) -> str:
-    """
-    Formats the prompt for the Claude model.
 
-    Args:
-        prompt (str): The original prompt.
-
-    Returns:
-        str: The formatted prompt.
-    """
-    return f"\n\nHuman: {prompt}\n\nAssistant:"
-
-def call_claude(prompt):
-    """
-    Calls the Claude model with a formatted prompt.
-
-    Args:
-        prompt (str): The prompt to send to the model.
-
-    Returns:
-        str: The response from the model.
-    """
-    prompt_config = {
-        "prompt": claude_prompt_format(prompt),
-        "max_tokens_to_sample": 4096,
-        "temperature": 0.7,
-        "top_k": 250,
-        "top_p": 0.5,
-        "stop_sequences": [],
-    }
-
-    body = json.dumps(prompt_config)
-    modelId = "anthropic.claude-v2"
-    accept = "application/json"
-    contentType = "application/json"
-
-    response = bedrock_runtime.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
-    response_body = json.loads(response.get("body").read())
-
-    results = response_body.get("completion")
-    return results
-
-def answer_query(user_input):
-    """
-    Answers a user query by retrieving context from Amazon Bedrock KnowledgeBases and calling an LLM.
-
-    Args:
-        user_input (str): The natural language question.
-
-    Returns:
-        str: The answer to the question based on context from the Knowledge Bases.
-    """
-    # Retrieve contexts for the user input from Bedrock knowledge bases
-    userContexts = get_contexts(user_input, knowledge_base_id)
-
-    # Configure the prompt for the LLM
-    prompt_data = """
-    You are an AWS Solutions Architect and your responsibility is to answer user questions based on provided context.
-    
-    Here is the context to reference:
-    <context>
-    {context_str}
-    </context>
-
-    Referencing the context, answer the user question.
-    <question>
-    {query_str}
-    </question>
-    """
-    formatted_prompt_data = prompt_data.format(context_str=userContexts, query_str=user_input)
-
-    prompt = {
-        "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 4096,
-        "temperature": 0.5,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": formatted_prompt_data}
-                ]
-            }
-        ]
-    }
-    
-    json_prompt = json.dumps(prompt)
-    response = bedrock_runtime.invoke_model(body=json_prompt, modelId="anthropic.claude-3-sonnet-20240229-v1:0",
-                                            accept="application/json", contentType="application/json")
-    response_body = json.loads(response.get('body').read())
-    answer = response_body['content'][0]['text']
-    
-    return answer
-
-def iac_gen_tool(prompt):
+# Additional function for IaC generation using Bedrock Converse API
+def iac_gen_converse_tool(prompt):
     """
     Generates Infrastructure as Code (IaC) scripts based on a customer's request.
 
@@ -172,8 +70,28 @@ def iac_gen_tool(prompt):
     Returns:
         str: The S3 path where the generated IaC code is saved.
     """
-    prompt_ending = "Act as a DevOps Engineer. Carefully analyze the customer requirements provided and identify all AWS services and integrations needed for the solution. Generate the Terraform code required to provision and configure each AWS service, writing the code step-by-step. Provide only the final Terraform code, without any additional comments, explanations, markdown formatting, or special symbols."
-    generated_text = call_claude_sonnet(prompt + prompt_ending)
+    client = boto3.client('bedrock-runtime', region_name='us-west-2')
+    
+    # Define the conversation prompt
+    prompt_ending = """Assume the role of a DevOps Engineer. Thoroughly analyze the provided customer requirements to determine all necessary AWS services and their integrations for the solution.
+            Generate the Terraform code required to provision and configure each AWS service, writing the code step-by-step. Ensure the code adheres to best practices and is valid Terraform syntax. Provide only the final Terraform code, without any additional comments, explanations, markdown formatting, or special symbols. 
+            Requirements:"""
+
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {"text": prompt_ending + "\n" + prompt}
+            ]
+        }
+    ]
+    
+    response = client.converse(
+        modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
+        messages=messages
+    )
+
+    generated_text = response['output']['message']['content'][0]['text']
     
     # Save to S3
     s3 = boto3.client('s3')
@@ -189,6 +107,8 @@ def iac_gen_tool(prompt):
     s3.upload_fileobj(file_buffer, bucket_name, s3_path)
     
     return f"File saved to S3 bucket {bucket_name} at {s3_path}"
+
+
 
 def iac_estimate_tool(prompt):
     """
@@ -208,7 +128,6 @@ def iac_estimate_tool(prompt):
     prefix_code = "iac-code"
     prefix_cost = "iac-cost"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"iac_cost_{timestamp}.tf"
     local_dir = '/tmp/infracost-evaluate'
     
     # Create the local directory if it doesn't exist
@@ -247,6 +166,26 @@ def iac_estimate_tool(prompt):
     # Upload cost evaluation file to S3 under the "iac-cost" folder
     s3_cost_result = os.path.join(prefix_cost, cost_filename)
     s3.upload_file(cost_file_path, bucket_name, s3_cost_result)
+
+
+
+    # Call Amazon Bedrock Converse API instead of the old invoke model API
+    client = boto3.client('bedrock-runtime', region_name='us-west-2')
+
+    messages = [
+    {
+        "role": "user",
+        "content": [
+            {"text": cost_file + "\n" + prompt_ending + "\n" + prompt}
+        ]
+    }
+    ]
     
-    generated_text = call_claude_sonnet(cost_file + prompt + prompt_ending)
+    response = client.converse(
+        modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
+        messages=messages
+    )
+
+    generated_text = response['output']['message']['content'][0]['text']
+ 
     return generated_text
