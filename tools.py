@@ -13,7 +13,7 @@ bedrock_runtime = boto3.client('bedrock-runtime', region_name=region_name)
 bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime', region_name=region_name)
 
 # Function to retrieve and generate response
-def answer_query(query):
+def answer_query_tool(query):
     response_ret = bedrock_agent_runtime_client.retrieve(
         knowledgeBaseId=kb_id, 
         nextToken='string',

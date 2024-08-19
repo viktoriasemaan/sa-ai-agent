@@ -10,7 +10,7 @@
             "get": {
                 "summary": "Query the knowledge bases based on AWS Well-Architected Framework, AWS documentation, and internal documentation about the internal tool Swissbox to answer a customer question.",
                 "description": "Query the knowledge bases based on AWS Well-Architected Framework, AWS documentation, and internal documentation about the internal tool Swissbox. The API takes in the customer query then returns the answer and a list of documents.",
-                "operationId": "queryWellArch",
+                "operationId": "answer_query_tool",
                 "parameters": [
                     {
                         "name": "query",
