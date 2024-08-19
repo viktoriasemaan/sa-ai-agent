@@ -33,7 +33,7 @@ def handler(event, context):
     # Check the API path to determine which tool function to call
     if api_path == "/answer_query":
         # Call the answer_query function from the tools module with the query
-        body = tools.answer_query(query)
+        body = tools.answer_query_tool(query)
         # Create a response body with the result
         response_body = {"application/json": {"body": str(body)}}
         response_code = 200

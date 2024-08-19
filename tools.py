@@ -12,7 +12,7 @@ region_name = "us-west-2"
 bedrock_runtime = boto3.client('bedrock-runtime', region_name=region_name)
 bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime', region_name=region_name)
 
-# Function to retrieve and generate response
+# Function to retrieve data from RAG and generate response
 def answer_query_tool(query):
     response_ret = bedrock_agent_runtime_client.retrieve(
         knowledgeBaseId=kb_id, 
@@ -45,21 +45,9 @@ def answer_query_tool(query):
         }
     )
 
-#    print(response['output']['text'], end='\n'*2)
-#    return response_ret
     return response['output']['text']
 
-def response_print(retrieve_resp):
-    # Structure 'retrievalResults': list of contents. Each list has content, location, score, metadata
-    for num, chunk in enumerate(retrieve_resp['retrievalResults'], 1):
-        print(f'Chunk {num}: ', chunk['content']['text'], end='\n'*2)
-        print(f'Chunk {num} Location: ', chunk['location'], end='\n'*2)
-        print(f'Chunk {num} Score: ', chunk['score'], end='\n'*2)
-        print(f'Chunk {num} Metadata: ', chunk['metadata'], end='\n'*2)
-
-
-
-# Additional function for IaC generation using Bedrock Converse API
+# Function for IaC generation (Terraform)
 def iac_gen_tool(prompt):
     """
     Generates Infrastructure as Code (IaC) scripts based on a customer's request.
@@ -108,8 +96,7 @@ def iac_gen_tool(prompt):
     
     return f"File saved to S3 bucket {bucket_name} at {s3_path}"
 
-
-
+# Function for estimating cost based on Terraform code
 def iac_estimate_tool(prompt):
     """
     Estimates the cost of an AWS infrastructure using Infracost.
@@ -165,7 +152,7 @@ def iac_estimate_tool(prompt):
     s3_cost_result = os.path.join(prefix_cost, cost_filename)
     s3.upload_file(cost_file_path, bucket_name, s3_cost_result)
 
-
+    # Send the output to bedrock to estimate the cost. 
     client = boto3.client('bedrock-runtime', region_name='us-west-2')
     
     system_prompt = """Given the estimated costs for an AWS cloud infrastructure, provide a breakdown of the monthly cost for each service. 
