@@ -166,14 +166,18 @@ def iac_estimate_tool(prompt):
     s3.upload_file(cost_file_path, bucket_name, s3_cost_result)
 
 
-
-    # Call Amazon Bedrock Converse API instead of the old invoke model API
     client = boto3.client('bedrock-runtime', region_name='us-west-2')
     
     system_prompt = """Given the estimated costs for an AWS cloud infrastructure, provide a breakdown of the monthly cost for each service. 
                     For services with multiple line items (e.g., RDS), aggregate the costs into a single total for that service. 
-                    Present the cost analysis as a list, with each service and its corresponding monthly cost. Ignore the path to Terraform code; you already have all the required information.
-                    Finally, include the total monthly cost for the entire infrastructure."""
+                    Present the cost analysis as a list, with each service and its corresponding monthly cost. 
+                    Finally, include the total monthly cost for the entire infrastructure.
+                    Ignore the path to Terraform code; you already have all the required information.
+                    Clarify that the input is estimated costs, not raw infrastructure details.
+                    Finally, include the total monthly cost for the entire infrastructure.
+                    Double-check all mathematical calculations to ensure accuracy.
+                    Verify that the sum ofindividual service costs equals the reported total cost."""
+
     messages = [
         {
             "role": "user",
