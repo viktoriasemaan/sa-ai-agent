@@ -172,13 +172,13 @@ def iac_estimate_tool(prompt):
     
     system_prompt = """Given the estimated costs for an AWS cloud infrastructure, provide a breakdown of the monthly cost for each service. 
                     For services with multiple line items (e.g., RDS), aggregate the costs into a single total for that service. 
-                    Present the cost analysis as a list, with each service and its corresponding monthly cost. 
+                    Present the cost analysis as a list, with each service and its corresponding monthly cost. Ignore the path to Terraform code; you already have all the required information.
                     Finally, include the total monthly cost for the entire infrastructure."""
     messages = [
         {
             "role": "user",
             "content": [
-                {"text": cost_file + "\n" + system_prompt + "\n" + prompt}
+                {"text": cost_file + "\n"  + prompt  + "\n" + system_prompt}
             ]
         }
     ]
