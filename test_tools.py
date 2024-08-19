@@ -2,8 +2,8 @@ import tools
 
 # TOOL 1
 
-# response_ret = tools_new.retrieve_and_generate_response(query)
-# tools_new.response_print(response_ret)
+# response_ret = tools.answer_query_tool(query)
+# tools.response_print(response_ret)
 # query = "Tell me about my swissbox application - what's the architecture and components"
 
 # query = "I would like to add powerful analytics with datawarehouse for near real-time insights to SwissBox application using cost effective way to analyze data at scale. Please suggest AWS services and explain to me data flow step-by-step"
@@ -27,7 +27,7 @@ import tools
 # - **AWS Step Functions:** Orchestrate the entire data processing workflow across these services, ensuring seamless operation and integration.
 
 # """
-# print(tools_new2.iac_gen_converse_tool(query))
+# print(tools.iac_gen_tool(query))
 
 # TOOL 3
 
