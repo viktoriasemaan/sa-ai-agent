@@ -3,13 +3,13 @@
     "info": {
         "title": "Agent AWS API",
         "version": "1.0.0",
-        "description": "APIs helping customers with knowledge of AWS by querying the AWS Well-Architected Framework, writing Terraform code."
+        "description": "APIs helping customers with knowledge of AWS by querying the AWS documentation, and internal documentation about the internal tool Swissbox, writing Terraform code."
     },
     "paths": {
         "/answer_query": {
             "get": {
-                "summary": "Query the AWS Well-Architected Framework to answer a customer question.",
-                "description": "Query the AWS Well-Architected Framework to answer a customer question. The API takes in the customer query then returns the answer and a list of documents.",
+                "summary": "Query the knowledge bases based on AWS Well-Architected Framework, AWS documentation, and internal documentation about the internal tool Swissbox to answer a customer question.",
+                "description": "Query the knowledge bases based on AWS Well-Architected Framework, AWS documentation, and internal documentation about the internal tool Swissbox. The API takes in the customer query then returns the answer and a list of documents.",
                 "operationId": "queryWellArch",
                 "parameters": [
                     {
