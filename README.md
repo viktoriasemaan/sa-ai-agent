@@ -1,18 +1,22 @@
-# Quick Start: AWS Solutions Architect AI Agent with Amazon Bedrock
+
+# Building AI Assitants with Amazon Bedrock Agents
 
 Welcome to this repository on building Generative AI Agents using Amazon Bedrock!
-
-
-
-
-# Building AI Agents with AWS Bedrock
 
 
 In fast-paced technical roles like Solutions Architects and Cloud Engineers, we often face repetitive, time-consuming tasks that take us away from more impactful work. In this tutorial we weill help a fictional company SwissBox to build analytics solution. 
 
 SwissBox is a tech company providing file-sharing services, approaches us for technical guidance on integrating analytics into their app, but the process can be tedious! We need to research their application architecture, security requirements, and AWS best practices, all while navigating over 200+ AWS services to find the right solution. This back-and-forth process consumes valuable time, delaying critical business outcomes.
 
+<div align="center">
+    <img src="Diagram 1 - Human.gif" width="600">
+</div>
+
 Imagine if we could automate these tasks using AI agents? Instead of spending days gathering information and building prototypes, AI agents could retrieve relevant data, generate infrastructure as code, and even provide cost estimates in seconds.
+
+<div align="center">
+    <img src="Diagram 2 - AI.gif" width="600">
+</div>
 
 This repository demonstrates how to build such AI agents using Amazon Bedrock, empowering you to streamline your workflow and focus on strategic work that drives business results.
 
