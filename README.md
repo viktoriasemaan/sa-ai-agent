@@ -9,13 +9,13 @@ In fast-paced technical roles like Solutions Architects and Cloud Engineers, we 
 SwissBox is a tech company providing file-sharing services, approaches us for technical guidance on integrating analytics into their app, but the process can be tedious! We need to research their application architecture, security requirements, and AWS best practices, all while navigating over 200+ AWS services to find the right solution. This back-and-forth process consumes valuable time, delaying critical business outcomes.
 
 <div align="center">
-    <img src="Diagram 1 - Human.gif" width="600">
+    <img src="images/Diagram 1 - Human.gif" width="600">
 </div>
 
 Imagine if we could automate these tasks using AI agents? Instead of spending days gathering information and building prototypes, AI agents could retrieve relevant data, generate infrastructure as code, and even provide cost estimates in seconds.
 
 <div align="center">
-    <img src="Diagram 2 - AI.gif" width="600">
+    <img src="images/Diagram 2 - AI.gif" width="600">
 </div>
 
 This repository demonstrates how to build such AI agents using Amazon Bedrock, empowering you to streamline your workflow and focus on strategic work that drives business results.
@@ -39,10 +39,6 @@ By the end of this tutorial, you will learn how to create an Amazon Bedrock Agen
 
 🖼️ *Accompanying slides can be found [here](./Building_AI_Agents_Slides.pdf)*
 
-
-<div align="center">
-    <img src="images/image01_ sa_overview.png" width="600">
-</div>
 
 Prerequisites:
 
