@@ -131,7 +131,7 @@ Review all your configurations and wait a few minutes for the setup to complete.
 
 #### 7. Test Your Knowledge Base
 
-Extend the configuration window to set up your chat and select the model (Claude 3 Sonnet).
+Extend the configuration window to set up your chat and select a model.
 
 #### 8. Adjust Prompt Template
 
@@ -203,6 +203,7 @@ Typically, we need to store the Terraform code in a designated location. For thi
 
 In the previous steps, we created the code to deploy the infrastructure. Before we proceed with deployment, let's estimate the approximate monthly cost to run this infrastructure for the customer. In this step, we will integrate the third-party tool [infracost](https://github.com/infracost/infracost) into our AI Assitant agent.
 
+🎥 *You can find the demo with detailed steps [Video 3 - Tool 3](./demos/)
 
 #### 1. Prepare Docker image
 
@@ -295,7 +296,7 @@ Congratulations! We have now configured all tools for our agent and are ready to
 Agents orchestrate and analyze the task and break it down into the correct logical sequence using the FM’s reasoning abilities. Agents automatically call the necessary APIs to transact with the company systems and processes to fulfill the request, determining along the way if they can proceed or if they need to gather more information.* 
 
 
-🎥 *You can find the demo with detailed steps [part 1- building an Agent](./demos/Video 4 - AI Agent 1.mov) and [part 2- building an Agent](./demos/Video 4 - AI Agent 2.mov)*
+🎥 *You can find the demo with detailed steps [Video 4 part 1- Building an Agent](./demos/) and [Video 4 part 2- Building an Agent](./demos/)*
 
 #### 1. Prepare Docker file
 
@@ -489,6 +490,7 @@ We will test our agent's ability to generate Infrastructure as Code (IaC) and es
 ```txt
 Write terraform code to build standard magento e-commerce application. Load 200 req/sec and 2000 number of products. And estimate cost of the solution based on the generated terraform code.
 ```
+Alternatively you can ask to build to add powerful analytics with datawarehouse for near real-time insights to SwissBox application using cost effective way to analyze data at scale. Generate Terraform code.
 
 As we execute our agent, we can trace its actions to gain insight into its decision-making process and subsequent steps. In the initial pre-processing phase, the agent will utilize two key tools from our setup:
 
@@ -505,10 +507,12 @@ For each step, the agent will log both the trace prompt and its subsequent actio
 The final output will indicate the storage locations for the generated IaC and the cost estimation.
 
 <div align="center">
-    <img src="images/image23_run_agent_trace.png" width="600">
+    <img src="images/image23_run_agent_result.png" width="600">
 </div>
 
-This concludes the process of building our solution architect generative AI agent. Now, it's time to experiment with various prompts and explore the agent's capabilities. Happy building 🎉
+This concludes the process of building our solution architect generative AI agent. Now, it's time to experiment with various prompts and explore the agent's capabilities. 
+
+Happy building! 🎉
 
 ## Security
 
