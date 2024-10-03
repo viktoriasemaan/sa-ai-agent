@@ -71,7 +71,7 @@ pip install -r requirements.txt
 
 This tool demonstrates how quickly a Knowledge Base or Retrieval Augmented Generation (RAG) system can be set up. It enriches user queries with new information from an uploaded knowledge base.
 
-🎥 *You can find the demo with detailed steps [here](./demos/Video 1 - Tool 1.mp4)*
+🎥 *You can find the demo with detailed steps [here](./demos/Video%201%20-%20Tool%201.mp4)*
 
 ### Custom Knowledge Base Setup:
 
@@ -165,7 +165,7 @@ The tool is especially powerful in generating modular, reusable IaC components, 
 
 For more details, check out the full benchmark report and coding capabilities [here](https://www.anthropic.com/news/claude-3-5-sonnet).
 
-🎥 *You can find the demo with detailed steps [here](./demos/Video 2 - Tool 2.mp4)*
+🎥 *You can find the demo with detailed steps [here](./demos/Video%202%20-%20Tool%202.mp4)*
 
 ### Generate IaC
 
@@ -207,7 +207,6 @@ Typically, we need to store the Terraform code in a designated location. For thi
 
 In the previous steps, we created the code to deploy the infrastructure. Before we proceed with deployment, let's estimate the approximate monthly cost to run this infrastructure for the customer. In this step, we will integrate the third-party tool [infracost](https://github.com/infracost/infracost) into our AI Assitant agent.
 
-🎥 *You can find the demo with detailed steps [here](./demos/Video 3 - Tool 3.mov)*
 
 #### 1. Prepare Docker image
 
