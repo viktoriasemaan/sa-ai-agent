@@ -148,7 +148,7 @@ Test your knowledge base with the question: "I would like to add powerful analyt
 
 #### 11. Working with the Knowledge Base through the Agent
 
-To work with the Knowledge Base using the agent, we need to get context from the user. The `get_contexts` function helps us with this by calling the foundation model with additional context from our knowledge base. This is implemented in the `answer_query` function.
+To work with the Knowledge Base using the agent, we need to get context from the user. The `retrieve_and_generate` API allows to query your knowledge base and generate responses from the information it retrieves. This is implemented in the `answer_query` function.
 To test this functionality, use the `test_tools.py` file. Uncomment the section `test answer_query` to run the test.
 
 The SA Q&A tool enables fast access to information that is not available in the default foundation model. It can, for instance, provide specific details about the SwissBox app configuration or answer general AWS-related questions. In the next phase, the tool will assist with configuration steps and generate Infrastructure as Code (IaC) for an initial version of the analytics solution we want to add.
