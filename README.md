@@ -71,7 +71,7 @@ pip install -r requirements.txt
 
 This tool demonstrates how quickly a Knowledge Base or Retrieval Augmented Generation (RAG) system can be set up. It enriches user queries with new information from an uploaded knowledge base.
 
-🎥 *You can find the demo with detailed steps [here](./demos/Video%201%20-%20Tool%201.mp4)*
+🎥 *You can find the demo with detailed steps [Video 1 - Tool 1](./demos/)*
 
 ### Custom Knowledge Base Setup:
 
@@ -165,7 +165,7 @@ The tool is especially powerful in generating modular, reusable IaC components, 
 
 For more details, check out the full benchmark report and coding capabilities [here](https://www.anthropic.com/news/claude-3-5-sonnet).
 
-🎥 *You can find the demo with detailed steps [here](./demos/Video%202%20-%20Tool%202.mp4)*
+🎥 *You can find the demo with detailed steps [Video 2 - Tool 2](./demos/)*
 
 ### Generate IaC
 
