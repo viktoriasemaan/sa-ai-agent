@@ -1,19 +1,40 @@
 # Quick Start: AWS Solutions Architect AI Agent with Amazon Bedrock
 
-
-
-This repository contains instructions and code samples for building an AWS Assisstant Agent with Amazon Bedrock.
-
 Welcome to this repository on building Generative AI Agents using Amazon Bedrock!
 
-This repo includes a tutorial for the following solutions:
+
+
+
+# Building AI Agents with AWS Bedrock
+
+
+In fast-paced technical roles like Solutions Architects and Cloud Engineers, we often face repetitive, time-consuming tasks that take us away from more impactful work. In this tutorial we weill help a fictional company SwissBox to build analytics solution. 
+
+SwissBox is a tech company providing file-sharing services, approaches us for technical guidance on integrating analytics into their app, but the process can be tedious! We need to research their application architecture, security requirements, and AWS best practices, all while navigating over 200+ AWS services to find the right solution. This back-and-forth process consumes valuable time, delaying critical business outcomes.
+
+Imagine if we could automate these tasks using AI agents? Instead of spending days gathering information and building prototypes, AI agents could retrieve relevant data, generate infrastructure as code, and even provide cost estimates in seconds.
+
+This repository demonstrates how to build such AI agents using Amazon Bedrock, empowering you to streamline your workflow and focus on strategic work that drives business results.
+
+## Solutions Included:
 
 1. **Tool 1** - Q&A ChatBot utilizing Knowledge Bases for Amazon Bedrock
-2. **Tool 2** - Generate IaC using multimodal LLM (Claude 3.5)
-3. **Tool 3** - Estimate costs using InfraCost
-4. **Integrate Tools** - Build AI Agent using Amazon Bedrock
+   - Build a Solutions Architect Q&A assistant to quickly retrieve relevant information from custom data sources like documentation, code repositories, and configurations.
+   
+2. **Tool 2** - Generate IaC using Claude 3.5 Sonnet
+   - Create a DevOps assistant that generates Infrastructure as Code (IaC) using Claude 3.5, allowing for rapid deployment of cloud infrastructure.
 
-By the end of this tutorial, you will learn how to create an Amazon Bedrock Agent that can assist with querying your enterprise documentation, suggest and explain AWS solutions, generate Infrastructure as Code (IaC), and estimate the monthly cost to run a solution on AWS.
+3. **Tool 3** - Estimate costs using InfraCost
+   - Develop a Financial Analyst assistant to estimate the costs of your proposed cloud solutions, helping you make informed financial decisions.
+
+4. **Integrate Tools** - Build AI Agent using Amazon Bedrock
+   - Combine the capabilities of all three tools into a single AI agent that can query enterprise documentation, suggest AWS solutions, generate IaC, and estimate AWS costs in one seamless workflow.
+
+By the end of this tutorial, you will learn how to create an Amazon Bedrock Agent that assists with querying your enterprise documentation, suggesting and explaining AWS solutions, generating IaC, and estimating the monthly costs to run a solution on AWS.
+
+
+🖼️ *Accompanying slides can be found [here](./Building_AI_Agents_Slides.pdf)*
+
 
 <div align="center">
     <img src="images/image01_ sa_overview.png" width="600">
@@ -336,7 +357,7 @@ In our case, we updated the required parameters by adding the following endpoint
 - `/iac_estimate_tool`
 - `/answer_query`
 
-#### 4. Index.py Will Call Separate Tool
+#### 4. Index.py Includes Logic to Call Tools
 
 The logic that determines which part of the agent needs to run is defined in the `index.py` file:
 
