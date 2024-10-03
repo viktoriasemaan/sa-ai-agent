@@ -1,32 +1,19 @@
 # Quick Start: AWS Solutions Architect AI Agent with Amazon Bedrock
 
 
-ZURICH STARTS HERE!
 
-
-
-
-
-
------BERLIN INSTRUCTIONS----------
-
-This repository contains instructions and code samples for building an AWS Solutions Architect Agent with Amazon Bedrock.
-
-🎥 In addition, you can find the session recording [here](https://bit.ly/boa305-berlin)
-
-
-[!["BOA305"](http://img.youtube.com/vi/8ftKjZyaqNk/0.jpg)](https://www.youtube.com/watch?v=8ftKjZyaqNk "BOA305")
+This repository contains instructions and code samples for building an AWS Assisstant Agent with Amazon Bedrock.
 
 Welcome to this repository on building Generative AI Agents using Amazon Bedrock!
 
 This repo includes a tutorial for the following solutions:
 
 1. **Tool 1** - Q&A ChatBot utilizing Knowledge Bases for Amazon Bedrock
-2. **Tool 2** - Explain diagrams and generate IaC using multimodal LLM (Claude 3)
+2. **Tool 2** - Generate IaC using multimodal LLM (Claude 3.5)
 3. **Tool 3** - Estimate costs using InfraCost
 4. **Integrate Tools** - Build AI Agent using Amazon Bedrock
 
-By the end of this tutorial, you will learn how to create an Amazon Bedrock Agent that can assist with querying the AWS documentation, suggest and explain AWS solutions, generate Infrastructure as Code (IaC), and estimate the monthly cost to run a solution on AWS.
+By the end of this tutorial, you will learn how to create an Amazon Bedrock Agent that can assist with querying your enterprise documentation, suggest and explain AWS solutions, generate Infrastructure as Code (IaC), and estimate the monthly cost to run a solution on AWS.
 
 <div align="center">
     <img src="images/image01_ sa_overview.png" width="600">
@@ -45,8 +32,8 @@ This workshop assumes you are working in an environment with access to [Python 3
 1. **Clone the Repository:** Start by cloning the provided repository which contains the code for our agent.
 
 ```bash
-git clone https://github.com/viktoriasemaan/ai-agents.git
-cd ai-agents
+git clone https://github.com/viktoriasemaan/sa-ai-agent.git
+cd sa-ai-agent
 ```
 
 2. **Install Dependencies:** Run the appropriate pip install command to download necessary packages.
@@ -57,29 +44,38 @@ pip install -r requirements.txt
 
 ## Tool 1 - Q&A ChatBot utilizing Knowledge Bases for Amazon Bedrock
 
-This tool aims to demonstrate how quickly a Knowledge Base or Retrieval Augmented Generation (RAG) system can be created. It enriches standard user requests with new information uploaded to the knowledge base.
+This tool demonstrates how quickly a Knowledge Base or Retrieval Augmented Generation (RAG) system can be set up. It enriches user queries with new information from an uploaded knowledge base.
 
-In our case, we will upload the latest published AWS whitepapers and references architecture diagrams to the knowledge base. This will allow the tool to provide answers as a solution architect by retrieving relevant information from the documentation.
+🎥 *You can find the demo with detailed steps [here](./demos/Video 1 - Tool 1.mp4)*
 
-RAG optimizes the output of a large language model by referencing an authoritative knowledge base. It compares embeddings of user queries to the knowledge library vector, appending the original prompt with relevant information to generate an informed response.
+### Custom Knowledge Base Setup:
+
+We will use a custom knowledge base that includes data from both a web crawler and S3 data sources:
+
+- **Web Crawler**: This example crawls a custom [GitHub repository](https://github.com/viktoriasemaan/swissbox) containing information about the SwissBox app. Feel free to replace this with your own data sources. Learn more about setting up web crawlers [here](https://docs.aws.amazon.com/bedrock/latest/userguide/webcrawl-data-source-connector.html).
+- **S3 Data Source**: Any additional documentation about your application can be added to S3. Learn more about the supported formats [here](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-ds.html).
+
+By using these sources, the tool will provide answers about the SwissBox app that foundational models might not have. This enables you to retrieve relevant information about your application within seconds.
+
+### How RAG Works:
+
+RAG optimizes the output of a large language model by referencing a custom knowledge base. It compares embeddings of user queries with the knowledge library vectors, then appends relevant information to the original prompt to generate a more informed response.
+
 
 <div align="center">
     <img src="images/image02_rag_in_action.png" width="600">
 </div>
 
-#### 1. Download Reference Architecture Diagrams
 
-First, download the latest reference architecture diagrams from [AWS Reference Architecture Diagrams](https://aws.amazon.com/architecture/reference-architecture-diagrams) and upload them to your S3 bucket named `knowledge-base-bedrock-agent`.
-
-#### 2. Create a Knowledge Base on Bedrock
+#### 1. Create a Knowledge Base on Bedrock
 
 Navigate to the Amazon Bedrock service. Under Builder Tools, select Knowledge Bases and create a new one.
 
-#### 3. Configure Permissions
+#### 2. Configure Permissions
 
 During the configuration, you need to set permissions for the job. This includes access to S3 and other services.
 
-#### 4. Choose Data Source
+#### 3. Choose Data Source
 
 Select your data source. Options include:
 
@@ -93,26 +89,30 @@ Select your data source. Options include:
     <img src="images/image03_data_source.png" width="600">
 </div>
 
-#### 5. Define the S3 Document Location
+#### 4. Define the Web Crawler.
 
-Specify the location of your documents in the S3 bucket.
+Provide URLs and limit the scope of the URLs to crawl and optionally exclude URLs that match a filter pattern. You can view the status of URLs visited while crawling in Amazon CloudWatch
 
-#### 6. Select the Embedding Model and Configure Vector Store
+<div align="center">
+    <img src="images/image03_webcrawler.png" width="600">
+</div>
+
+#### 5. Select the Embedding Model and Configure Vector Store
 
 Choose the embedding model. Options include Amazon's Titan or Cohere. For our demo, we'll use the Titan model for embedding and OpenSearch as the vector store.
 <div align="center">
     <img src="images/image04_embeddins.png" width="600">
 </div>
 
-#### 7. Review the Configuration
+#### 6. Review the Configuration
 
 Review all your configurations and wait a few minutes for the setup to complete.
 
-#### 8. Test Your Knowledge Base
+#### 7. Test Your Knowledge Base
 
 Extend the configuration window to set up your chat and select the model (Claude 3 Sonnet).
 
-#### 9. Adjust Prompt Template
+#### 8. Adjust Prompt Template
 
 In the "Knowledge Base Prompt Template" section, adjust the prompt to act as an AWS Solution Architect.
 
@@ -122,58 +122,29 @@ In the "Knowledge Base Prompt Template" section, adjust the prompt to act as an 
 
 #### 10. Test the Knowledge Base
 
-Test your knowledge base with the question: "Tell me about zero-ETL with Aurora and Redshift?" You should receive a response with references to the information sources.
+Test your knowledge base with the question: "I would like to add powerful analytics with datawarehouse for near real-time insights to SwissBox application using cost effective way to analyze data at scale. Please suggest AWS services and explain to me data flow step-by-step?" You should receive a response with references to the information sources.
 
-<div align="center">
-    <img src="images/image06_reference.png" width="600">
-</div>
 
 #### 11. Working with the Knowledge Base through the Agent
 
 To work with the Knowledge Base using the agent, we need to get context from the user. The `get_contexts` function helps us with this by calling the foundation model with additional context from our knowledge base. This is implemented in the `answer_query` function.
 To test this functionality, use the `test_tools.py` file. Uncomment the section `test answer_query` to run the test.
 
-This tool, the SA Q&A, helps quickly find information not available in the default foundation model. For example, it can provide the latest details on zero-ETL with Aurora and RedShift. The next step is to assist with big architecture diagrams and generate Infrastructure as Code (IaC) for the MVP.
+The SA Q&A tool enables fast access to information that is not available in the default foundation model. It can, for instance, provide specific details about the SwissBox app configuration or answer general AWS-related questions. In the next phase, the tool will assist with configuration steps and generate Infrastructure as Code (IaC) for an initial version of the analytics solution we want to add.
 
-## Tool 2 - Explain diagrams and generate IaC using multimodal LLM (Claude 3)
+## Tool 2 - Generate IaC with Claude 3.5 Sonnet
 
-Our next tool will help us generate IaC when we need an MVP. Before we jump into IaC generation, we should take advantage of Claude 3's multimodal capabilities, which include vision. Claude 3 can analyze images, making it particularly helpful for understanding and explaining architecture diagrams. By using Claude 3, we can gain insights into the components and relationships within these diagrams, enhancing our ability to create accurate and effective infrastructure as code.
+Our next tool will help us generate Infrastructure as Code (IaC) when needed to quickly spin up a demo environment. Before we dive into IaC generation, we can leverage the advanced coding capabilities of Claude 3.5 Sonnet. Claude 3.5 has been benchmarked for its outstanding performance in code generation tasks, scoring highly in various coding-related benchmarks, including automating deployments, generating optimized configurations, and suggesting best practices for infrastructure design. 
 
-### Explain Diagrams and Test Different Models
+The tool is especially powerful in generating modular, reusable IaC components, reducing manual coding efforts, and ensuring that cloud resources are provisioned efficiently. Compared to other models, Claude 3.5 Sonnet exhibits a remarkable balance between speed and accuracy in producing high-quality code, making it an ideal solution for real-world scenarios where fast prototyping and performance are key.
 
-#### 1. Open the Chat Playground
+For more details, check out the full benchmark report and coding capabilities [here](https://www.anthropic.com/news/claude-3-5-sonnet).
 
-To test any foundation model, start by opening the Amazon Bedrock Console and navigating to Playgrounds -> Chat. In the new window, select the model. We will be using the Claude 3 Sonnet model.
-
-#### 2. Select an Additional Model to Compare
-
-Let's compare Claude 3 Sonnet with Claude 3 Haiku. So, select Claude 3 Haiku on the other side of the playground.
-
-<div align="center">
-    <img src="images/image07_playground.png" width="600">
-</div>
-
-#### 3. Upload Image and Define the Prompt
-
-Now, upload any architecture diagram. We will use a legacy version of an e-commerce application to add an additional challenge for our comparison.
-
-<div align="center">
-    <img src="images/image08_diagramm.png" width="600">
-</div>
-
-#### 4. Compare Results
-
-We can compare the metrics and responses from both models to evaluate their performance.
-
-<div align="center">
-    <img src="images/image09_comparemodels.png" width="600">
-</div>
-
-Based on this comparison, you can see that in our case, Claude 3 Haiku performs very well and is much cheaper from a cost perspective. Depending on your use case, you can make the right selection of the foundation model.
+🎥 *You can find the demo with detailed steps [here](./demos/Video 2 - Tool 2.mp4)*
 
 ### Generate IaC
 
-Now that we understand the architecture diagram, we need to generate Terraform code (IaC) to test our idea. Typically, a solution architect should be able to provide part of the IaC for MVP and test purposes. It's a good time to add this to our SA Agent.
+Claude 3.5 Sonnet excels at generating Terraform scripts, allowing users to quickly create and manage cloud infrastructure. Its advanced AI capabilities ensure that the generated Terraform code is optimized for scalability, modularity, and ease of deployment, making it an ideal tool for automating infrastructure as code.
 
 #### 1. Prepare the Right Prompt for `iac_gen_tool` Function
 
@@ -209,7 +180,9 @@ Typically, we need to store the Terraform code in a designated location. For thi
 
 ## Tool 3 - Estimate costs using InfraCost
 
-In the previous steps, we created the code to deploy the infrastructure. Before we proceed with deployment, let's estimate the approximate monthly cost to run this infrastructure for the customer. In this step, we will integrate the third-party tool [infracost](https://github.com/infracost/infracost) into our SA agent.
+In the previous steps, we created the code to deploy the infrastructure. Before we proceed with deployment, let's estimate the approximate monthly cost to run this infrastructure for the customer. In this step, we will integrate the third-party tool [infracost](https://github.com/infracost/infracost) into our AI Assitant agent.
+
+🎥 *You can find the demo with detailed steps [here](./demos/Video 3 - Tool 3.mov)*
 
 #### 1. Prepare Docker image
 
@@ -299,7 +272,10 @@ Congratulations! We have now configured all tools for our agent and are ready to
     <img src="images/image24_agent_overview.gif" width="600">
 </div>
 
-*Agents orchestrate and analyze the task and break it down into the correct logical sequence using the FM’s reasoning abilities. Agents automatically call the necessary APIs to transact with the company systems and processes to fulfill the request, determining along the way if they can proceed or if they need to gather more information.* 
+Agents orchestrate and analyze the task and break it down into the correct logical sequence using the FM’s reasoning abilities. Agents automatically call the necessary APIs to transact with the company systems and processes to fulfill the request, determining along the way if they can proceed or if they need to gather more information.* 
+
+
+🎥 *You can find the demo with detailed steps [part 1- building an Agent](./demos/Video 4 - AI Agent 1.mov) and [part 2- building an Agent](./demos/Video 4 - AI Agent 2.mov)*
 
 #### 1. Prepare Docker file
 

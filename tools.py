@@ -4,8 +4,8 @@ import subprocess
 import boto3
 from datetime import datetime
 
-# Define the knowledge base ID
-kb_id = "OUYPGZVGKR"
+# Define the knowledge base ID, Update with your id and region
+kb_id = "OUYPGZVGKR" 
 region_name = "us-west-2"
 
 # Initialize Bedrock runtime clients
