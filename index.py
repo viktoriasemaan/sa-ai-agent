@@ -1,64 +1,40 @@
+import logging
+from typing import Dict, Any
 import tools
 
-def handler(event, context):
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     Lambda function handler to process API requests and route them to the appropriate tool functions.
 
     Args:
-        event (dict): The event data containing API request details.
-        context (object): The context object providing runtime information.
+        event (Dict[str, Any]): The event data containing API request details.
+        context (Any): The context object providing runtime information.
 
     Returns:
-        dict: The response dictionary containing the API response details.
+        Dict[str, Any]: The response dictionary containing the API response details.
     """
-    # Print the received event to the logs
-    print("Received event: ", event)
+    logger.info("Received event: %s", event)
 
-    # Initialize response code to None
-    response_code = None
-
-    # Extract the action group, API path, and parameters from the event
     action = event["actionGroup"]
     api_path = event["apiPath"]
     parameters = event["parameters"]
     input_text = event["inputText"]
     http_method = event["httpMethod"]
 
-    print(f"Input Text: {input_text}")
+    logger.info("Input Text: %s", input_text)
 
-    # Get the query value from the parameters
     query = parameters[0]["value"]
-    print(f"Query: {query}")
+    logger.info("Query: %s", query)
 
-    # Check the API path to determine which tool function to call
-    if api_path == "/answer_query":
-        # Call the answer_query function from the tools module with the query
-        body = tools.answer_query_tool(query)
-        # Create a response body with the result
-        response_body = {"application/json": {"body": str(body)}}
-        response_code = 200
-    elif api_path == "/iac_gen":
-        # Call the iac_gen_tool function from the tools module with the query
-        body = tools.iac_gen_tool(query)
-        # Create a response body with the result
-        response_body = {"application/json": {"body": str(body)}}
-        response_code = 200
-    elif api_path == "/iac_estimate_tool":
-        # Call the iac_estimate_tool function from the tools module with the query
-        body = tools.iac_estimate_tool(query)
-        # Create a response body with the result
-        response_body = {"application/json": {"body": str(body)}}
-        response_code = 200
-    else:
-        # If the API path is not recognized, return an error message
-        body = f"{action}::{api_path} is not a valid API, try another one."
-        response_code = 400
-        response_body = {"application/json": {"body": str(body)}}
+    response_code, body = process_api_request(api_path, query)
 
-    # Print the response body to the logs
-    print(f"Response body: {response_body}")
+    response_body = {"application/json": {"body": str(body)}}
+    logger.info("Response body: %s", response_body)
 
-    # Create a dictionary containing the response details
     action_response = {
         "actionGroup": action,
         "apiPath": api_path,
@@ -67,26 +43,40 @@ def handler(event, context):
         "responseBody": response_body,
     }
 
-    # Return the list of responses as a dictionary
-    api_response = {"messageVersion": "1.0", "response": action_response}
+    return {"messageVersion": "1.0", "response": action_response}
 
-    return api_response
+def process_api_request(api_path: str, query: str) -> tuple[int, str]:
+    """
+    Process the API request based on the api_path.
 
-# Example usage
+    Args:
+        api_path (str): The API path to determine which tool function to call.
+        query (str): The query parameter for the tool function.
+
+    Returns:
+        tuple[int, str]: A tuple containing the response code and body.
+    """
+    api_handlers = {
+        "/answer_query": tools.answer_query_tool,
+        "/iac_gen": tools.iac_gen_tool,
+        "/iac_estimate_tool": tools.iac_estimate_tool,
+    }
+
+    if api_path in api_handlers:
+        return 200, api_handlers[api_path](query)
+    else:
+        return 400, f"{api_path} is not a valid API, try another one."
+
 if __name__ == "__main__":
-    # Example event data
-    event = {
+    # Example usage
+    example_event = {
         "actionGroup": "exampleGroup",
         "apiPath": "/answer_query",
         "parameters": [{"value": "exampleQuery"}],
         "inputText": "exampleInput",
         "httpMethod": "GET"
     }
-    # Example context data
-    context = {}
+    example_context = {}
 
-    # Call the handler function
-    response = handler(event, context)
-
-    # Print the response
+    response = handler(example_event, example_context)
     print(response)

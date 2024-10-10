@@ -4,29 +4,27 @@ FROM infracost/infracost:ci-latest AS infracost
 # Use the amazon/aws-lambda-python:3.11 as the base image
 FROM amazon/aws-lambda-python:3.11
 
-# Install the tar package (assuming it's not already installed), and clean up to reduce image size
+# Install tar, copy infracost, set up environment in a single layer
 RUN yum install -y tar && \
     yum clean all && \
-    rm -rf /var/cache/yum
+    rm -rf /var/cache/yum && \
+    mkdir /app && \
+    yum -y remove tar
 
-# Create a directory for the infracost binary
-RUN mkdir /app
-
-# Copy the infracost binary from the infracost image to the current image
 COPY --from=infracost /usr/bin/infracost /app/
 
-# Set the PATH environment variable to include the directory containing the infracost binary
 ENV PATH="/app:${PATH}"
 
-# Copy the requirements file and function code
+# Copy only the requirements file first to leverage Docker cache
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
-COPY index.py ${LAMBDA_TASK_ROOT}
-COPY tools.py ${LAMBDA_TASK_ROOT}
 
-# Upgrade pip and install required Python packages in a single RUN command
-RUN pip install --upgrade pip && \
+# Install Python packages in a single layer
+RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir -U boto3 botocore
+
+# Copy function code
+COPY index.py tools.py ${LAMBDA_TASK_ROOT}/
 
 # Set the CMD to the Lambda handler
 CMD [ "index.handler" ]
