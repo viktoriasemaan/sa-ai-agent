@@ -2,13 +2,9 @@ import tools
 
 # TOOL 1
 
-# response_ret = tools.answer_query_tool(query)
-# tools.response_print(response_ret)
 # query = "Tell me about my swissbox application - what's the architecture and components"
-
-# query = "I would like to add powerful analytics with datawarehouse for near real-time insights to SwissBox application using cost effective way to analyze data at scale. Please suggest AWS services and explain to me data flow step-by-step"
-# response_text = tools_new2.retrieve_and_generate_response(query)
-# print(response_text)
+# response_ret = tools.answer_query_tool(query)
+# print(response_ret)
 
 
 # TOOL 2
@@ -31,6 +27,5 @@ import tools
 
 # TOOL 3
 
-# test iac_cost_estimation_tool
 query = "Estimate costs."
 print(tools.iac_estimate_tool(query))

@@ -3,13 +3,13 @@
     "info": {
         "title": "Agent AWS API",
         "version": "1.0.0",
-        "description": "APIs helping customers with knowledge of AWS by querying the AWS documentation, and internal documentation about the internal tool Swissbox, writing Terraform code."
+        "description": "APIs helping customers with specific knowledge about the Swissbox app through knowledge bases, writing Terraform code and estimating cost of architectures."
     },
     "paths": {
         "/answer_query": {
             "get": {
-                "summary": "Query the knowledge bases based on AWS Well-Architected Framework, AWS documentation, and internal documentation about the internal tool Swissbox to answer a customer question.",
-                "description": "Query the knowledge bases based on AWS Well-Architected Framework, AWS documentation, and internal documentation about the internal tool Swissbox. The API takes in the customer query then returns the answer and a list of documents.",
+                "summary": "Query the knowledge bases based on the Swissbox documentation to answer a customer question.",
+                "description": "The answer_query fonction allows to answer specific questions about the Swissbox app by querying a knowledge base pointing to sources like the github repo of the app and an S3 bucket containing different documentation about it's architecture and AWS services. The API takes in the customer query then returns the answer with the sources from the knowledge base.",
                 "operationId": "answer_query_tool",
                 "parameters": [
                     {
@@ -45,7 +45,7 @@
         "/iac_gen": {
             "get": {
                 "summary": "Generate IaC code for the customer",
-                "description": "Write Terraform code for the customer. The API takes in the customer query and returns the code for the customer.",
+                "description": "This fonction allows to generate the terraform code based on the requirements specified by the customer. The API takes in the customer query and returns the terraform code for the customer in a S3 bucket.",
                 "operationId": "iac_gen_tool",
                 "parameters": [
                     {

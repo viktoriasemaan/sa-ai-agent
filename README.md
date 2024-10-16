@@ -100,8 +100,8 @@ During the configuration, you need to set permissions for the job. This includes
 
 Select your data source. Options include:
 
-- S3 bucket (our case)
-- Web Crawler
+- S3 bucket
+- Web Crawler (our case)
 - Confluence
 - Salesforce
 - SharePoint
@@ -112,7 +112,7 @@ Select your data source. Options include:
 
 #### 4. Define the Web Crawler.
 
-Provide URLs and limit the scope of the URLs to crawl and optionally exclude URLs that match a filter pattern. You can view the status of URLs visited while crawling in Amazon CloudWatch
+Provide URLs (here we'll use the URL of the Swissbox github repo: https://github.com/viktoriasemaan/swissbox) and limit the scope of the URLs to crawl and optionally exclude URLs that match a filter pattern. You can view the status of URLs visited while crawling in Amazon CloudWatch. 
 
 <div align="center">
     <img src="images/image03_webcrawler.png" width="600">
@@ -127,15 +127,15 @@ Choose the embedding model. Options include Amazon's Titan or Cohere. For our de
 
 #### 6. Review the Configuration
 
-Review all your configurations and wait a few minutes for the setup to complete.
+Review all your configurations, click on create and wait a few minutes for the setup to complete. If you see the message "One or more data sources have not been synced", click on "go to data sources", select the data source you want to sync and click on the sync button. This may take several minutes to hours depending on the size of your data source. 
 
 #### 7. Test Your Knowledge Base
 
-Extend the configuration window to set up your chat and select a model.
+Extend the configuration window to set up your chat and select the model you can to try (here we'll try Claude 3 Sonnet).
 
 #### 8. Adjust Prompt Template
 
-In the "Knowledge Base Prompt Template" section, adjust the prompt to act as an AWS Solution Architect.
+Click on the configurations icon. Scroll down to the "Knowledge Base Prompt Template" section. Click on edit and adjust the prompt to act as an AWS Solution Architect. Click on save changes.
 
 <div align="center">
     <img src="images/image05_prompt.png" width="600">
@@ -143,13 +143,13 @@ In the "Knowledge Base Prompt Template" section, adjust the prompt to act as an 
 
 #### 10. Test the Knowledge Base
 
-Test your knowledge base with the question: "I would like to add powerful analytics with datawarehouse for near real-time insights to SwissBox application using cost effective way to analyze data at scale. Please suggest AWS services and explain to me data flow step-by-step?" You should receive a response with references to the information sources.
+Now you can enter a message in the chat window. Test your knowledge base with the question: "I would like to add powerful analytics with datawarehouse for near real-time insights to SwissBox application using cost effective way to analyze data at scale. Please suggest AWS services and explain to me data flow step-by-step?" You should receive a response with references to the information sources.
 
 
 #### 11. Working with the Knowledge Base through the Agent
 
-To work with the Knowledge Base using the agent, we need to get context from the user. The `retrieve_and_generate` API allows to query your knowledge base and generate responses from the information it retrieves. This is implemented in the `answer_query` function.
-To test this functionality, use the `test_tools.py` file. Uncomment the section `test answer_query` to run the test.
+To work with the Knowledge Base using the agent, we need to get context from the user. The `retrieve_and_generate` API allows to query your knowledge base and generate responses from the information it retrieves. This is implemented in the `answer_query_tool` function.
+To test this functionality, make sure you changed the `kb_id` in the `tools.py` file to match your kwonledge base ID that we just created. Also make sure you specify the `region_name` corresponding to where your KB is located. Then go to the `test_tools.py` file and uncomment the section `TOOL 1` to run the test. 
 
 The SA Q&A tool enables fast access to information that is not available in the default foundation model. It can, for instance, provide specific details about the SwissBox app configuration or answer general AWS-related questions. In the next phase, the tool will assist with configuration steps and generate Infrastructure as Code (IaC) for an initial version of the analytics solution we want to add.
 
@@ -167,7 +167,7 @@ For more details, check out the full benchmark report and coding capabilities [h
 
 Claude 3.5 Sonnet excels at generating Terraform scripts, allowing users to quickly create and manage cloud infrastructure. Its advanced AI capabilities ensure that the generated Terraform code is optimized for scalability, modularity, and ease of deployment, making it an ideal tool for automating infrastructure as code.
 
-#### 1. Prepare the Right Prompt for `iac_gen_tool` Function
+#### 1. Prepare the right prompt for `iac_gen_tool` function in `tools.py`
 
 The first step is to prepare a good prompt to generate the code.
 
@@ -193,15 +193,18 @@ For that reason, we added `prompt_ending` variable, which we will add to the fin
 
 #### 3. Storing the Result on S3
 
-Typically, we need to store the Terraform code in a designated location. For this purpose, we have defined an S3 bucket where the code will be stored. This stored code will also be used to estimate the infrastructure costs. Detailed instructions on how to work with S3 can be found in the   `iac_gen_tool` function.
+Typically, we need to store the Terraform code in a designated location. For this purpose, we have defined an S3 bucket where the code will be stored. This stored code will also be used to estimate the infrastructure costs. Detailed instructions on how to work with S3 can be found in the `iac_gen_tool` function.
 
 <div align="center">
     <img src="images/image10_iac_code.png" width="600">
 </div>
 
+#### 4. Test the code
+To run the test create your bucket and change the `bucket_name` in the `tools.py` file. Then uncomment the section `TOOL 2` in the `test_tools.py` to run the test. You should see a terraform file created in your bucket.
+
 ## Tool 3 - Estimate costs using InfraCost
 
-In the previous steps, we created the code to deploy the infrastructure. Before we proceed with deployment, let's estimate the approximate monthly cost to run this infrastructure for the customer. In this step, we will integrate the third-party tool [infracost](https://github.com/infracost/infracost) into our AI Assitant agent.
+In the previous steps, we generated the code to deploy the infrastructure. Before we proceed with deployment, let's estimate the approximate monthly cost to run this infrastructure for the customer. In this step, we will integrate the third-party tool [infracost](https://github.com/infracost/infracost) into our AI Assitant agent.
 
 🎥 *You can find the demo with detailed steps [Video 3 - Tool 3](./demos/)
 
@@ -217,11 +220,11 @@ FROM infracost/infracost:ci-latest as infracost
 
 Next, please copy the required files:
 
-```
+```Dockerfile
 COPY --from=infracost /usr/bin/infracost /app/
 ```
 
-You can find the complete Dockerfile in this repository.
+You can find the complete Dockerfile in this repository. 
 
 #### 2. Prepare Prompt for Infrastructure Cost Estimation
 
@@ -285,6 +288,17 @@ As a result, we see the breakdown of all services and the total cost:
     <img src="images/image12_infracost_fm.png" width="600">
 </div>
 
+#### 7. Run the test
+To run the test you can build the docker image with the following command. 
+```
+docker build -t sa-ai-agent .
+```
+If you get the following error message `ERROR: failed to solve: infracost/infracost:ci-latest: no match for platform in manifest: not found` then replace the first line of the Dockerfile with this one:
+```Dockerfile
+FROM --platform=linux/amd64 infracost/infracost:ci-latest AS infracost
+```
+Then go the the `tools.py` file and uncomment the section `TOOL 3`. 
+
 Congratulations! We have now configured all tools for our agent and are ready to combine them into one unified agent.
 
 ## Integrate Tools - Build AI Agent using Amazon Bedrock
@@ -320,7 +334,7 @@ COPY tools.py ${LAMBDA_TASK_ROOT}
 The next step is to build and upload our image to ECR. To build our Docker image, use the following command:
 
 ```
-docker build -t ai-agents .
+docker build -t sa-ai-agent .
 ```
 
 Next, authenticate with our ECR repository. We have already created the repository. Use the following command to authenticate:
@@ -329,7 +343,7 @@ Next, authenticate with our ECR repository. We have already created the reposito
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 123412341234.dkr.ecr.us-west-2.amazonaws.com
 ```
 
-Where `123412341234` is your AWS account ID.
+Where `123412341234` is your AWS account ID. Also make sure the region matches yours.
 
 Next, properly tag the image and push it to the repository:
 
