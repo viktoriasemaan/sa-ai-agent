@@ -4,9 +4,12 @@ import subprocess
 import boto3
 from datetime import datetime
 
-# Define the knowledge base ID, Update with your id and region
-kb_id = "OUYPGZVGKR" 
-region_name = "us-west-2"
+# Update with your knowledge base ID, region and bucket name where you want to drop 
+# the IaC files and cost estimations
+
+kb_id = "" 
+region_name = ""
+bucket_name = ""
 
 # Initialize Bedrock runtime clients
 bedrock_runtime = boto3.client('bedrock-runtime', region_name=region_name)
@@ -58,11 +61,16 @@ def iac_gen_tool(prompt):
     Returns:
         str: The S3 path where the generated IaC code is saved.
     """
-    client = boto3.client('bedrock-runtime', region_name='us-west-2')
+    client = boto3.client('bedrock-runtime', region_name=region_name)
     
     # Define the conversation prompt
-    prompt_ending = """Assume the role of a DevOps Engineer. Thoroughly analyze the provided customer requirements to determine all necessary AWS services and their integrations for the solution.
-            Generate the Terraform code required to provision and configure each AWS service, writing the code step-by-step. Ensure the code adheres to best practices and is valid Terraform syntax. Provide only the final Terraform code, without any additional comments, explanations, markdown formatting, or special symbols. 
+    prompt_ending = """Assume the role of a DevOps Engineer. 
+            Thoroughly analyze the provided customer requirements to determine all 
+            necessary AWS services and their integrations for the solution.
+            Generate the Terraform code required to provision and configure each AWS service, 
+            writing the code step-by-step. Ensure the code adheres to best practices and 
+            is valid Terraform syntax. Provide only the final Terraform code, without 
+            any additional comments, explanations, markdown formatting, or special symbols. 
             Requirements:"""
 
     messages = [
@@ -83,7 +91,6 @@ def iac_gen_tool(prompt):
     
     # Save to S3
     s3 = boto3.client('s3')
-    bucket_name = "bedrock-agent-generate-iac-estimate-cost"
     prefix = "iac-code/"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"iac_{timestamp}.tf"
@@ -109,7 +116,6 @@ def iac_estimate_tool(prompt):
     """
     # Get terraform code from S3
     s3 = boto3.client('s3')
-    bucket_name = "bedrock-agent-generate-iac-estimate-cost"
     prefix_code = "iac-code"
     prefix_cost = "iac-cost"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -153,7 +159,7 @@ def iac_estimate_tool(prompt):
     s3.upload_file(cost_file_path, bucket_name, s3_cost_result)
 
     # Send the output to bedrock to estimate the cost. 
-    client = boto3.client('bedrock-runtime', region_name='us-west-2')
+    client = boto3.client('bedrock-runtime', region_name=region_name)
     
     system_prompt = """Given the estimated costs for an AWS cloud infrastructure, provide a breakdown of the monthly cost for each service. 
                     For services with multiple line items (e.g., RDS), aggregate the costs into a single total for that service. 
